@@ -114,11 +114,14 @@ Fly.prototype.draw = function(context) {
     console.log("Fly drawn at x:", this.x, "y:", this.y); // Debugging log
 };
 
-/// GAME
+// GAME
 function Game() {
     var canvas = document.getElementById("game");
-    this.width = canvas.width;
-    this.height = canvas.height;
+    var container = document.getElementById("gameContainer");
+    this.width = container.clientWidth;
+    this.height = Math.floor(this.width * 0.5); // Adjust the height proportionally
+    canvas.width = this.width;
+    canvas.height = this.height;
     this.context = canvas.getContext("2d");
     document.spacePressed = false;
 
@@ -248,12 +251,11 @@ Game.prototype.displayGameOver = function() {
     this.context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--game-over-color') || "red";
     this.context.font = getComputedStyle(document.documentElement).getPropertyValue('--game-over-font') || "48px 'Roboto', sans-serif";
     this.context.fillText("Game Over", this.width / 2 - 100, this.height / 2);
-    this.context.fillStyle = oldFill;
-    this.context.font = oldFont;
 
     // Show the restart button
     var restartButton = document.getElementById("restartButton");
     restartButton.style.display = "block";
+    restartButton.style.top = `${canvas.offsetTop + this.height / 2 + 50}px`; // Adjust the position to be below the "Game Over" text
 };
 
 var game = new Game();
