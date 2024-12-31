@@ -1,0 +1,33 @@
+#game {
+    background-color: rgb(255, 255, 255);
+}
+
+:root {
+    --ground-color: white;
+    --cactus-color: green;
+    --water-color: blue;
+    --score-color: black;
+    --score-font: 20px serif;
+    --game-over-color: red;
+    --game-over-font: 48px 'Roboto', sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0; /* Optional: Set a background color */
+}
+
+canvas {
+    border: 1px solid #000; /* Optional: Add a border to the canvas */
+}
+
+.game-over {
+    font-family: var(--game-over-font);
+    font-size: var(--game-over-font-size);
+    color: var(--game-over-color);
+    text-align: center;
+}
