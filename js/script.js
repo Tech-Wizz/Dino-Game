@@ -88,19 +88,63 @@ Water.prototype.draw = function(context) {
     console.log("Water drawn at x:", this.x, "y:", this.y); // Debugging log
 };
 
-// GAME
+// FLY
+function Fly(gameWidth, groundY) {
+    this.width = 30; // fixed width fly
+    this.height = 20; // fixed height fly
+    this.x = gameWidth;
+    
+    // Define three different heights
+    const heights = [
+        groundY - this.height - 120, // High
+        groundY - this.height - 80,  // Medium
+        groundY - this.height        // Low
+    ];
+    
+    // Randomly select one of the heights
+    this.y = heights[Math.floor(Math.random() * heights.length)];
+    console.log("Fly created at x:", this.x, "y:", this.y); // Debugging log
+}
+
+Fly.prototype.draw = function(context) {
+    var oldFill = context.fillStyle;
+    context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--fly-color') || "black";
+    context.fillRect(this.x, this.y, this.width, this.height);
+    context.fillStyle = oldFill;
+    console.log("Fly drawn at x:", this.x, "y:", this.y); // Debugging log
+};
+
+/// GAME
 function Game() {
     var canvas = document.getElementById("game");
     this.width = canvas.width;
     this.height = canvas.height;
     this.context = canvas.getContext("2d");
     document.spacePressed = false;
+
+    // Event listener for spacebar and arrow up
     document.addEventListener("keydown", function(e) {
-        if (e.key === " ") this.spacePressed = true;
+        if (e.key === " " || e.key === "ArrowUp") this.spacePressed = true;
     });
     document.addEventListener("keyup", function(e) {
-        if (e.key === " ") this.spacePressed = false;
+        if (e.key === " " || e.key === "ArrowUp") this.spacePressed = false;
     });
+
+    // Event listener for mouse click
+    canvas.addEventListener("mousedown", function() {
+        document.spacePressed = true;
+    });
+    canvas.addEventListener("mouseup", function() {
+        document.spacePressed = false;
+    });
+
+    // Event listener for restart button
+    var restartButton = document.getElementById("restartButton");
+    restartButton.addEventListener("click", function() {
+        game.reset();
+        startGame();
+    });
+
     this.gravity = 1.5;
     this.divider = new Divider(this.width, this.height);
     this.dino = new Dinosaur(Math.floor(0.1 * this.width), this.divider.y);
@@ -112,10 +156,13 @@ function Game() {
 
 Game.prototype.spawnObstacle = function(probability) {
     if (Math.random() <= probability) {
-        if (Math.random() < 0.5) {
+        const obstacleType = Math.random();
+        if (obstacleType < 0.33) {
             this.obstacles.push(new Cactus(this.width, this.divider.y));
-        } else {
+        } else if (obstacleType < 0.66) {
             this.obstacles.push(new Water(this.width, this.divider.y));
+        } else {
+            this.obstacles.push(new Fly(this.width, this.divider.y));
         }
     }
 }
@@ -145,8 +192,20 @@ Game.prototype.update = function() {
     }
 
     for (i = 0; i < this.obstacles.length; i++) {
-        if (rightWall(this.dino) >= leftWall(this.obstacles[i]) && leftWall(this.dino) <= rightWall(this.obstacles[i]) && bottomWall(this.dino) >= topWall(this.obstacles[i])) {
-            this.paused = true;
+        const obstacle = this.obstacles[i];
+        const dinoBottom = bottomWall(this.dino);
+        const dinoTop = topWall(this.dino);
+
+        if (rightWall(this.dino) >= leftWall(obstacle) && leftWall(this.dino) <= rightWall(obstacle)) {
+            if (obstacle instanceof Fly) {
+                if ((dinoBottom >= topWall(obstacle) && dinoTop <= bottomWall(obstacle)) || (dinoBottom >= topWall(obstacle) && dinoBottom <= bottomWall(obstacle))) {
+                    this.paused = true;
+                }
+            } else {
+                if (dinoBottom >= topWall(obstacle)) {
+                    this.paused = true;
+                }
+            }
         }
     }
 
@@ -182,6 +241,7 @@ Game.prototype.reset = function() {
     this.runSpeed = -10; // Reset the run speed
 };
 
+// Display game over and show restart button
 Game.prototype.displayGameOver = function() {
     var oldFill = this.context.fillStyle;
     var oldFont = this.context.font;
@@ -190,6 +250,10 @@ Game.prototype.displayGameOver = function() {
     this.context.fillText("Game Over", this.width / 2 - 100, this.height / 2);
     this.context.fillStyle = oldFill;
     this.context.font = oldFont;
+
+    // Show the restart button
+    var restartButton = document.getElementById("restartButton");
+    restartButton.style.display = "block";
 };
 
 var game = new Game();
@@ -211,6 +275,10 @@ function startGame() {
     }
     animationFrameId = window.requestAnimationFrame(main);
     document.removeEventListener("keydown", startGameOnSpace);
+
+    // Hide the restart button
+    var restartButton = document.getElementById("restartButton");
+    restartButton.style.display = "none";
 }
 
 function startGameOnSpace(e) {
