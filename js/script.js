@@ -114,6 +114,44 @@ Fly.prototype.draw = function(context) {
     // console.log("Fly drawn at x:", this.x, "y:", this.y); // Debugging log
 };
 
+// Function to set a cookie
+function setCookie(name, value, days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
+}
+
+// Function to get a cookie
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+}
+
+// Function to ask for permission to store high score in cookies
+function askPermission() {
+    return confirm("Do you allow us to store your high score in cookies?");
+}
+
+// Check for cookie permission on page load
+window.addEventListener('load', function() {
+    var cookiePermission = getCookie("cookiePermission");
+    if (cookiePermission === null) {
+        var permission = askPermission();
+        setCookie("cookiePermission", permission, 365); // Store permission for 1 year
+    }
+    startGame();
+});
+
 // GAME
 function Game() {
     var canvas = document.getElementById("game");
@@ -156,7 +194,14 @@ function Game() {
     this.paused = false;
     this.noOfFrames = 0;
     this.score = 0;
-    this.highScore = 0; // Add highScore property
+
+    // Check for high score in cookies
+    var cookiePermission = getCookie("cookiePermission");
+    if (cookiePermission === "true") {
+        this.highScore = parseInt(getCookie("highScore")) || 0;
+    } else {
+        this.highScore = 0;
+    }
 }
 
 Game.prototype.spawnObstacle = function(probability) {
@@ -267,6 +312,9 @@ Game.prototype.displayGameOver = function() {
     // Update high score if current score is higher
     if (this.score > this.highScore) {
         this.highScore = this.score;
+        if (getCookie("cookiePermission") === "true") {
+            setCookie("highScore", this.highScore, 365); // Store high score in cookies for 1 year
+        }
     }
 
     // Show the restart button
