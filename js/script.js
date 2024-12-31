@@ -18,7 +18,7 @@ function Dinosaur(x, dividerY) {
     this.x = x;
     this.y = dividerY - this.height;
     this.vy = 0;
-    this.jumpVelocity = -20;
+    this.jumpVelocity = -15;
     this.image = new Image();
     this.image.src = "../img/runner.png"; // Load the image
 }
@@ -28,7 +28,7 @@ Dinosaur.prototype.draw = function(context) {
 };
 
 Dinosaur.prototype.jump = function() {
-    console.log("Jump called");
+    // console.log("Jump called");
     this.vy = this.jumpVelocity;
 };
 
@@ -77,7 +77,7 @@ function Water(gameWidth, groundY) {
     this.height = 10; // fixed height water
     this.x = gameWidth;
     this.y = groundY; // Align with the top of the divider
-    console.log("Water created at x:", this.x, "y:", this.y); // Debugging log
+    // console.log("Water created at x:", this.x, "y:", this.y); // Debugging log
 }
 
 Water.prototype.draw = function(context) {
@@ -85,7 +85,7 @@ Water.prototype.draw = function(context) {
     context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--water-color') || "blue";
     context.fillRect(this.x, this.y, this.width, this.height);
     context.fillStyle = oldFill;
-    console.log("Water drawn at x:", this.x, "y:", this.y); // Debugging log
+    // console.log("Water drawn at x:", this.x, "y:", this.y); // Debugging log
 };
 
 // FLY
@@ -103,7 +103,7 @@ function Fly(gameWidth, groundY) {
     
     // Randomly select one of the heights
     this.y = heights[Math.floor(Math.random() * heights.length)];
-    console.log("Fly created at x:", this.x, "y:", this.y); // Debugging log
+    // console.log("Fly created at x:", this.x, "y:", this.y); // Debugging log
 }
 
 Fly.prototype.draw = function(context) {
@@ -111,7 +111,7 @@ Fly.prototype.draw = function(context) {
     context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--fly-color') || "black";
     context.fillRect(this.x, this.y, this.width, this.height);
     context.fillStyle = oldFill;
-    console.log("Fly drawn at x:", this.x, "y:", this.y); // Debugging log
+    // console.log("Fly drawn at x:", this.x, "y:", this.y); // Debugging log
 };
 
 // GAME
@@ -128,18 +128,18 @@ function Game() {
     // Event listener for spacebar
     document.addEventListener("keydown", function(e) {
         if (e.key === " " || e.key === "ArrowUp") this.spacePressed = true;
-        console.log("Space Pressed");
+        // console.log("Space Pressed");
     });
     document.addEventListener("keyup", function(e) {
         if (e.key === " " || e.key === "ArrowUp") this.spacePressed = false;
     });
 
     // Event listener for mouse click
-    canvas.addEventListener("mousedown", () => {
+    canvas.addEventListener("mousedown", function() {
         document.spacePressed = true;
         console.log("Mouse Pressed");
     });
-    canvas.addEventListener("mouseup", () => {
+    canvas.addEventListener("mouseup", function() {
         document.spacePressed = false;
     });
 
@@ -150,11 +150,11 @@ function Game() {
         startGame();
     });
 
-    this.gravity = 1.5;
+    this.gravity = .7;
     this.divider = new Divider(this.width, this.height);
     this.dino = new Dinosaur(Math.floor(0.1 * this.width), this.divider.y);
     this.obstacles = [];
-    this.runSpeed = -10;
+    this.runSpeed = -5 ;
     this.paused = false;
     this.noOfFrames = 0;
 }
@@ -177,9 +177,7 @@ Game.prototype.update = function() {
         return;
     }
     if (document.spacePressed && bottomWall(this.dino) >= topWall(this.divider)) {
-        console.log("Conditions met");
         this.dino.jump();
-        console.log("Jumped");
     }
     this.dino.update(this.divider, this.gravity);
 
@@ -219,13 +217,16 @@ Game.prototype.update = function() {
     this.score = Math.floor(this.noOfFrames / 10);
 
     this.jumpDistance = Math.floor(this.runSpeed * (2 * this.dino.jumpVelocity) / this.gravity);
+
+    // Adjust the speed based on the score
+    this.adjustSpeed();
 };
 
 Game.prototype.draw = function() {
     this.context.clearRect(0, 0, this.width, this.height);
     this.divider.draw(this.context);
     this.dino.draw(this.context);
-    for (i = 0; i < this.obstacles.length; i++) {
+    for (var i = 0; i < this.obstacles.length; i++) {
         this.obstacles[i].draw(this.context);
     }
 
@@ -233,9 +234,16 @@ Game.prototype.draw = function() {
     var oldFont = this.context.font;
     this.context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--score-color') || "black";
     this.context.font = getComputedStyle(document.documentElement).getPropertyValue('--score-font') || "20px serif";
-    this.context.fillText(this.score, this.width - 40, 30);
+    this.context.fillText(this.score, this.width - 40, 30); // Display the score
     this.context.fillStyle = oldFill;
     this.context.font = oldFont;
+};
+
+Game.prototype.adjustSpeed = function() {
+    if (this.score % 50 === 0 && this.score !== 0) {
+        this.runSpeed -= .03; // Increase speed by 1 unit for every multiple of 50
+        console.log("Speed increased to", this.runSpeed);
+    }
 };
 
 Game.prototype.reset = function() {
@@ -244,11 +252,11 @@ Game.prototype.reset = function() {
     this.paused = false;
     this.noOfFrames = 0;
     this.score = 0;
-    this.runSpeed = -10; // Reset the run speed
+    this.runSpeed = -5; // Reset the run speed
 };
 
 // Display game over and show restart button
-Game.prototype.displayGameOver = function() {
+Game.prototype.displayGameOver = function() { 
     var oldFill = this.context.fillStyle;
     var oldFont = this.context.font;
     this.context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--game-over-color') || "red";
@@ -258,7 +266,7 @@ Game.prototype.displayGameOver = function() {
     // Show the restart button
     var restartButton = document.getElementById("restartButton");
     restartButton.style.display = "block";
-    restartButton.style.top = `${canvas.offsetTop + this.height / 2 + 50}px`; // Adjust the position to be below the "Game Over" text
+    //restartButton.style.top = `${canvas.offsetTop + this.height / 2 + 50}px`; // Adjust the position to be below the "Game Over" text
 };
 
 var game = new Game();
@@ -300,3 +308,14 @@ document.addEventListener("keydown", function(e) {
         startGame();
     }
 });
+
+function load(timeStamp) {
+    game.draw();
+    game.dino.draw(game.context); // Ensure the dinosaur is drawn
+}
+
+var game = new Game();
+game.score = 0;
+game.draw();
+
+window.onload = load; 
