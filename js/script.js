@@ -125,26 +125,28 @@ function Game() {
     this.context = canvas.getContext("2d");
     document.spacePressed = false;
 
-    // Event listener for spacebar and arrow up
+    // Event listener for spacebar
     document.addEventListener("keydown", function(e) {
         if (e.key === " " || e.key === "ArrowUp") this.spacePressed = true;
+        console.log("Space Pressed");
     });
     document.addEventListener("keyup", function(e) {
         if (e.key === " " || e.key === "ArrowUp") this.spacePressed = false;
     });
 
     // Event listener for mouse click
-    canvas.addEventListener("mousedown", function() {
+    canvas.addEventListener("mousedown", () => {
         document.spacePressed = true;
+        console.log("Mouse Pressed");
     });
-    canvas.addEventListener("mouseup", function() {
+    canvas.addEventListener("mouseup", () => {
         document.spacePressed = false;
     });
 
     // Event listener for restart button
     var restartButton = document.getElementById("restartButton");
-    restartButton.addEventListener("click", function() {
-        game.reset();
+    restartButton.addEventListener("click", () => {
+        this.reset();
         startGame();
     });
 
@@ -174,9 +176,10 @@ Game.prototype.update = function() {
     if (this.paused) {
         return;
     }
-    if (document.spacePressed == true && bottomWall(this.dino) >= topWall(this.divider)) {
+    if (document.spacePressed && bottomWall(this.dino) >= topWall(this.divider)) {
         console.log("Conditions met");
         this.dino.jump();
+        console.log("Jumped");
     }
     this.dino.update(this.divider, this.gravity);
 
@@ -190,11 +193,11 @@ Game.prototype.update = function() {
         this.spawnObstacle(0.05);
     }
 
-    for (i = 0; i < this.obstacles.length; i++) {
+    for (var i = 0; i < this.obstacles.length; i++) {
         this.obstacles[i].x += this.runSpeed;
     }
 
-    for (i = 0; i < this.obstacles.length; i++) {
+    for (var i = 0; i < this.obstacles.length; i++) {
         const obstacle = this.obstacles[i];
         const dinoBottom = bottomWall(this.dino);
         const dinoTop = topWall(this.dino);
