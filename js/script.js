@@ -128,7 +128,6 @@ function Game() {
     // Event listener for spacebar
     document.addEventListener("keydown", function(e) {
         if (e.key === " " || e.key === "ArrowUp") this.spacePressed = true;
-        // console.log("Space Pressed");
     });
     document.addEventListener("keyup", function(e) {
         if (e.key === " " || e.key === "ArrowUp") this.spacePressed = false;
@@ -137,7 +136,6 @@ function Game() {
     // Event listener for mouse click
     canvas.addEventListener("mousedown", function() {
         document.spacePressed = true;
-        console.log("Mouse Pressed");
     });
     canvas.addEventListener("mouseup", function() {
         document.spacePressed = false;
@@ -154,9 +152,11 @@ function Game() {
     this.divider = new Divider(this.width, this.height);
     this.dino = new Dinosaur(Math.floor(0.1 * this.width), this.divider.y);
     this.obstacles = [];
-    this.runSpeed = -5 ;
+    this.runSpeed = -5;
     this.paused = false;
     this.noOfFrames = 0;
+    this.score = 0;
+    this.highScore = 0; // Add highScore property
 }
 
 Game.prototype.spawnObstacle = function(probability) {
@@ -235,6 +235,7 @@ Game.prototype.draw = function() {
     this.context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--score-color') || "black";
     this.context.font = getComputedStyle(document.documentElement).getPropertyValue('--score-font') || "20px serif";
     this.context.fillText(this.score, this.width - 40, 30); // Display the score
+    this.context.fillText("High Score: " + this.highScore, 10, 30); // Display the high score on the left
     this.context.fillStyle = oldFill;
     this.context.font = oldFont;
 };
@@ -263,10 +264,14 @@ Game.prototype.displayGameOver = function() {
     this.context.font = getComputedStyle(document.documentElement).getPropertyValue('--game-over-font') || "48px 'Roboto', sans-serif";
     this.context.fillText("Game Over", this.width / 2 - 100, this.height / 2);
 
+    // Update high score if current score is higher
+    if (this.score > this.highScore) {
+        this.highScore = this.score;
+    }
+
     // Show the restart button
     var restartButton = document.getElementById("restartButton");
     restartButton.style.display = "block";
-    //restartButton.style.top = `${canvas.offsetTop + this.height / 2 + 50}px`; // Adjust the position to be below the "Game Over" text
 };
 
 var game = new Game();
